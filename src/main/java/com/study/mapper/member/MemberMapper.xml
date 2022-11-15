@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="com.study.mapper.member.MemberMapper">
+	<insert id="insert">
+		INSERT INTO Member (nickName, id, password, email)
+		VALUES (#{nickName}, #{id}, #{password}, #{email})
+	</insert>
+	
+	<select id="selectAll" resultType="com.study.domain.member.MemberDTO"> <!-- DTO insert > resultMap or resultType -->
+		SELECT nickName, id, '숨김'password, email, inserted
+		FROM Member
+		ORDER BY id
+	</select>
+	
+	<select id="selectNickName" resultType="com.study.domain.member.MemberDTO">
+		SELECT id, password, email, nickName, inserted
+		FROM Member
+		WHERE nickName = #{nickName}
+	</select>
+	
+	<select id="selectEmail" resultType="com.study.domain.member.MemberDTO">
+		SELECT id, password, email, nickName, inserted
+		FROM Member
+		WHERE email = #{email}
+	</select>
+	
+	<select id="select" resultType="com.study.domain.member.MemberDTO">
+		SELECT id, password, email, nickName, inserted
+		FROM Member
+		WHERE id = #{id}
+	</select>
+	
+	<update id="update">
+		UPDATE Member 
+		SET 
+			password = #{password},
+			nickName = #{nickName},
+			email = #{email}
+		WHERE id = #{id}
+	</update>
+		
+	<delete id="delete">
+		DELETE FROM Member
+		WHERE id = #{id}
+	</delete>
+	
+</mapper>
