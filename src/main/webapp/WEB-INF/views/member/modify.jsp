@@ -48,15 +48,15 @@
 					
 					<div class="mb-3">
 						<label for="" class="form-label">
-							암호
+							새 비밀번호
 						</label>
-						<input id="passwordInput1" class="form-control" type="password" name="password" value="${member.password}" data-old-password = "${member.password }">
-						<div id="passwordText" class="form-text">암호를 다시 한번 확인해 주세요</div>
+						<input id="passwordInput1" class="form-control" type="password" name="password">
+						<div id="passwordText" class="form-text"></div>
 					</div>
 					
 					<div class="mb-3">
 						<label for="" class="form-label">
-							암호 확인
+							새 비밀번호 확인
 						</label>
 						<input id="passwordInput2" class="form-control" type="password">
 					</div>
@@ -121,6 +121,8 @@
 	let availableNickName = true;
 	let availableEmail = true;
 	let availablePassword = true;
+	
+	enableSubmitButton();
 	
 	function enableSubmitButton(){
 		const button = document.querySelector("#submitButton");

@@ -3,7 +3,11 @@ package com.study.controller.member;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,7 +27,14 @@ public class MemberController {
 	@Autowired
 	private MemberService service;
 	
+	@Autowired
+	private PasswordEncoder passwordEncoder;
 	
+	@GetMapping("login")
+	public void login() {	
+		
+	}
+
 	@PostMapping("cancel")
 	public String cancel(MemberDTO member, RedirectAttributes rttr ) {
 		
@@ -57,7 +68,7 @@ public class MemberController {
 		
 		Map<String,Object> map = new HashMap<>();
 		
-		MemberDTO member = service.getNickName("nickName");
+		MemberDTO member = service.getNickName(nickName);
 		
 		if (member == null) {
 			map.put("status", "not exist");
@@ -129,7 +140,8 @@ public class MemberController {
 		MemberDTO oldmember = service.get(member.getId());
 		
 		rttr.addAttribute("id", member.getId());
-		if (oldmember.getPassword().equals(oldPassword)) {
+		boolean passwordMatch = passwordEncoder.matches(oldPassword, oldmember.getPassword());
+		if (passwordMatch) {
 			return "redirect:/member/modify";
 		} else {
 			rttr.addFlashAttribute("message", "암호가 일치하지 않습니다.");
@@ -137,7 +149,8 @@ public class MemberController {
 		}
 		
 	}
-	
+			
+			
 	@PostMapping("modify")
 	public String modify(MemberDTO member, RedirectAttributes rttr) {
 	
@@ -155,13 +168,17 @@ public class MemberController {
 	}
 	
 	@PostMapping("remove")
-	public String remove(String id, String oldPassword, RedirectAttributes rttr) {
+	public String remove(String id, String oldPassword, RedirectAttributes rttr, HttpServletRequest request) throws ServletException {
 		MemberDTO oldmember = service.get(id);
 		
-		if (oldmember.getPassword().equals(oldPassword)) {
-			int cnt = service.remove(id);
+		boolean passwordMatch = passwordEncoder.matches(oldPassword, oldmember.getPassword());
+		
+		/*if (oldmember.getPassword().equals(oldPassword)) { */
+		if(passwordMatch) {
+			service.remove(id);
 			
 			rttr.addFlashAttribute("message", "회원 탈퇴하였습니다.");
+			request.logout();
 			
 			return "redirect:/member/list";
 			

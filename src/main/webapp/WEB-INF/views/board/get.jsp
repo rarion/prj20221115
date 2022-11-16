@@ -1,6 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
 <%@ page import="java.net.*" %>  <!-- page encoder package -->
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>   
 <%@ taglib prefix="my" tagdir="/WEB-INF/tags" %>
 <!DOCTYPE html>
@@ -23,9 +24,18 @@
 					<c:url value="/board/modify" var="modifyLink">
 						<c:param name="id" value="${board.id}"></c:param>
 					</c:url>
-					<a href="${modifyLink }"> 
-						<i class="fa-solid fa-pen-to-square"></i>
-					</a>
+					
+					<%-- <sec:authorize access="isAuthenticated()" /> --%>
+					
+					<sec:authentication property="name" var="username" />
+					<!-- 작성자와 authentication.name이 같으면 보여줌 -->
+					<c:if test="${board.writer == username}">
+						<a href="${modifyLink }"> 
+							<i class="fa-solid fa-pen-to-square"></i>
+						</a>
+					</c:if>	
+			
+				
 				</h1>
 
 				<div class="mb-3">
@@ -80,11 +90,19 @@
 			<div class="row">
 				<div class="col">
 					<input type="hidden" id="boardId" value="${board.id }"> 
-					
-					<div class="input-group">
-						<input type="text" class="form-control" id="replyInput1">
-						<button class="btn btn-outline-secondary" id="replySendButton1"><i class="fa-solid fa-reply"></i></button>
-					</div>
+					<sec:authorize access="isAuthenticated()">
+						<!-- 댓글 작성  -->
+						
+						<div class="input-group">
+							<input type="text" class="form-control" id="replyInput1">
+							<button class="btn btn-outline-secondary" id="replySendButton1"><i class="fa-solid fa-reply"></i></button>
+						</div>
+					</sec:authorize>
+					<sec:authorize access="not isAuthenticated()">
+						<div class="alert alert-light">
+							댓글을 작성하시려면 로그인하세요.
+						</div>
+					</sec:authorize>
 				</div>
 			</div>
 		</div>

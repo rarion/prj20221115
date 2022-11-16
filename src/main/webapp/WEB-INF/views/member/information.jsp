@@ -29,7 +29,7 @@
 				<form id="" action="" method="post">
 					아이디 <input class="form-control-plaintext" type="text" name="id" value="${member.id}" readonly> <br>
 					닉네임 <input type="text" class="form-control-plaintext" name="nickName" value="${member.nickName }" readonly> <br>					
-					암호 <input class="form-control-plaintext" type="password" name="password" value="${member.password}" readonly> <br>
+				<%-- 암호 <input class="form-control-plaintext" type="password" name="password" value="${member.password}" readonly> <br> --%>
 					이메일 <input class="form-control-plaintext" type="email" name="email" value="${member.email}" readonly> <br>
 					가입일시 <input class="form-control-plaintext" type="text" name="inserted" value="${member.inserted}" readonly> <br>
 					<input type="hidden" name="oldPassword">
@@ -86,7 +86,7 @@
 	        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 	      </div>
 	      <div class="modal-body">
-	        <input id="oldPasswordInput2" type="text" class="form-control">
+	        <input id="oldPasswordInput2" type="password" class="form-control">
 	      </div>
 	      <div class="modal-footer">
 	        <button id="modalConfirmButton2" type="button" class="btn btn-danger">탈퇴</button>

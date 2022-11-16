@@ -80,7 +80,7 @@
 					
 					<div class="mb-3">
 						<label class="form-label"> 작성자 </label> 
-						<input class="form-control" type="text" name="writer" value="${board.writer}">
+						<input class="form-control" type="text" value="${board.writer}">
 					</div>
 					<div>
 						<label class="form-label"> 작성일시 </label> 

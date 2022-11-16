@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="my" tagdir="/WEB-INF/tags" %>
 <!DOCTYPE html>
@@ -12,6 +13,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha512-xh6O/CkQoPOWDdYTDqeRdPCVd1SpvCA9XXcUnZS2FmJNp1coAFzvtCN9BmamE+4aHK8yyUHUSCcJHgXloTyT2A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 <body>
+	<sec:authorize access="isAuthenticated()" var="loggedIn" />
 	
 	<my:navBar active="list"></my:navBar>
 	
@@ -28,9 +30,17 @@
 				
 				<h2>게시물 목록
 					<c:url value="/board/register" var="registerLink"></c:url>
-					<a class="brn" href="${registerLink }">
-						<i class="fa-solid fa-pencil"></i>
-					</a>	
+					<c:if test="${loggedIn }">
+						<a href="${registerLink }">
+							<i class="fa-solid fa-pencil"></i>
+						</a>	
+					</c:if>
+					<c:url value="/member/login" var="loginLink"></c:url>
+					<c:if test="${not loggedIn }">
+						<a href="${loginLink }">
+							<i class="fa-solid fa-pencil"></i>
+						</a>
+					</c:if>
 				</h2>
 				<table class="table" style="font-size: 14px">
 					<thead>
