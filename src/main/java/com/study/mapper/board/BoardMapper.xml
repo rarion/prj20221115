@@ -5,9 +5,36 @@
   
 <mapper namespace="com.study.mapper.board.BoardMapper">
 
+	<select id="countLikeByBoardId" resultType="int">
+		SELECT COUNT(*)
+		FROM BoardLike
+		WHERE boardId = #{boardId}
+	</select>
+	
+	<insert id="insertLike">
+		INSERT INTO BoardLike(boardId, memberId)
+		VALUES (#{boardId}, #{memberId})
+	</insert>
+	
+	<delete id="deleteLikeByBoardId">
+		DELETE FROM BoardLike
+		WHERE boardId = #{boardId}
+	</delete>
+
+	<delete id="deleteLike" >
+		DELETE FROM BoardLike
+		WHERE boardId = #{boardId} AND memberId = #{memberId}
+	</delete>
+
+	<select id="getLikeByBoardIdAndMemberId" resultType="int">
+		SELECT COUNT(*)
+		FROM BoardLike
+		WHERE boardId = #{boardId} AND memberId = #{memberId}
+	</select>
+
 	<delete id="deleteFileByBoardIdAndFileName">
-	DELETE FROM File
-	WHERE boardId = #{id} AND name = #{fileName}
+		DELETE FROM File
+		WHERE boardId = #{id} AND name = #{fileName}
 	</delete>
 	
 	<delete id="deleteFileByBoardId">
@@ -55,9 +82,11 @@
 			b.writer,
 			b.inserted,
 			COUNT(DISTINCT r.id) countReply,
-			COUNT(DISTINCT f.id) countFile
+			COUNT(DISTINCT f.id) countFile,
+			COUNT(DISTINCT l.memberId) countLike <!-- cartesian product  -->
 		FROM Board b LEFT JOIN Reply r ON b.id = r.boardId
 					 LEFT JOIN File f ON b.id = f.boardId
+					 LEFT JOIN BoardLike l ON b.id = l.boardId
 		WHERE
 			<trim prefixOverrides="OR">
 				<if test="type == 'all' or type == 'title'">
@@ -79,8 +108,18 @@
 	
 	
 	<select id="select" resultMap="boardMap" >
-		SELECT b.id, b.title, b.content, b.writer, b.inserted, f.id fileId, f.name fileName 
+		SELECT b.id,
+			   b.title, 
+			   b.content, 
+			   b.writer, 
+			   b.inserted, 
+			    <!-- COUNT(l.memberId) countLike, -->
+			   (SELECT COUNT(*) FROM BoardLike WHERE boardId = b.id AND memberId = #{username}) liked, 
+			   (SELECT COUNT(*) FROM BoardLike WHERE boardId = b.id) countLike,
+			   f.id fileId, 
+			   f.name fileName 
 		FROM Board b LEFT JOIN File f ON b.id = f.boardId
+					 LEFT JOIN BoardLike l ON b.id = l.boardId
 		WHERE b.id = #{id} 
 	</select>
 	<resultMap type="com.study.domain.board.BoardDto" id="boardMap">
@@ -89,6 +128,8 @@
 		<result column="writer" property="writer"></result>
 		<result column="content" property="content"></result>
 		<result column="inserted" property="inserted"></result>
+		<result column="liked" property="liked"></result>
+		<result column="countLike" property="countLike"></result>
 		<collection property="fileName" ofType="String" >
 			<result property="fileName" column="fileName"></result>
 		</collection>
@@ -106,6 +147,20 @@
 		DELETE FROM Board
 		WHERE id = #{id}
 	</delete>
+	
+	<delete id="deleteLikeByMemberId">
+		DELETE FROM BoardLike
+		WHERE memberId = #{id}
+	</delete>
+	
+	<select id="listByMemberId" resultType="com.study.domain.board.BoardDto">
+		SELECT 
+			id
+		FROM
+			Board
+		WHERE
+			writer = #{id}
+	</select>
 	
 <!-- 	<update id="updateCount">
 		UPDATE Board 

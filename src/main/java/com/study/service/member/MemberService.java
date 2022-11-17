@@ -5,14 +5,29 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import com.study.domain.board.BoardDto;
 import com.study.domain.member.MemberDTO;
+import com.study.mapper.board.BoardMapper;
+import com.study.mapper.board.ReplyMapper;
 import com.study.mapper.member.MemberMapper;
+import com.study.service.board.BoardService;
 
 @Service
 public class MemberService {
 
 	@Autowired
-	private MemberMapper mapper;
+	private MemberMapper memberMapper;
+	
+	@Autowired
+	private ReplyMapper replyMapper;
+	
+	@Autowired
+	private BoardMapper boardMapper;
+	
+	@Autowired
+	private BoardService boardService;
+	
 	
 	@Autowired
 	private PasswordEncoder passwordEncoder;
@@ -24,27 +39,27 @@ public class MemberService {
 		member.setPassword(passwordEncoder.encode(pw));
 		
 		
-		return mapper.insert(member);
+		return memberMapper.insert(member);
 	}
 
 	public List<MemberDTO> list() {
 		
-		return mapper.selectAll();
+		return memberMapper.selectAll();
 	}
 
 	public MemberDTO get(String id) {
 		
-		return mapper.select(id);
+		return memberMapper.select(id);
 	}
 	
 	public MemberDTO getEmail(String email) {
 		
-		return mapper.selectEmail(email);
+		return memberMapper.selectEmail(email);
 	}
 
 	public MemberDTO getNickName(String nickName) {
 		
-		return mapper.selectNickName(nickName);
+		return memberMapper.selectNickName(nickName);
 	}
 
 	public int update(MemberDTO member) {
@@ -55,7 +70,7 @@ public class MemberService {
 			String pw = member.getPassword();
 			member.setPassword(passwordEncoder.encode(pw));
 			
-			return mapper.update(member);
+			return memberMapper.update(member);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -65,7 +80,21 @@ public class MemberService {
 
 	public int remove(String id) {
 		
-		return mapper.delete(id);
+		// 좋아요 지우기
+		boardMapper.deleteLikeByMemberId(id);
+		
+		// 댓글 지우기
+		replyMapper.deleteByMemberId(id);
+		
+		// 사용자가 쓴 게시물 조회
+		List<BoardDto> list = boardMapper.listByMemberId(id);
+		
+		for (BoardDto board : list) {
+			boardService.remove(board.getId());
+		}
+
+		
+		return memberMapper.delete(id);
 	}
 
 

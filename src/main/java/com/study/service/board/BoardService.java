@@ -2,7 +2,9 @@ package com.study.service.board;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,7 +24,7 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 @Service // work, file add, file remove
 @Transactional // all rollback
-public class BoardSerivce {
+public class BoardService {
 
 	@Autowired
 	private BoardMapper boardMapper;
@@ -103,9 +105,9 @@ public class BoardSerivce {
 		return boardMapper.list(offset, records, type, "%" + keyword + "%");
 	}
 
-	public BoardDto get(int id) {
+	public BoardDto get(int id, String username) {
 		// TODO Auto-generated method stub
-		return boardMapper.select(id);
+		return boardMapper.select(id, username);
 	}
 
 	
@@ -172,6 +174,9 @@ public class BoardSerivce {
 				deleteFile(id, fileName);
 			}
 		}
+	
+		boardMapper.deleteLikeByBoardId(id);
+		
 		// db 파일 records 지우기
 		boardMapper.deleteFileByBoardId(id);
 		
@@ -191,6 +196,31 @@ public class BoardSerivce {
 				.key(key)
 				.build();
 		s3Client.deleteObject(deleteObjectRequest);
+	}
+
+	public Map<String, Object> updateLike(String boardId, String memberId) {
+		
+		Map<String, Object> map = new HashMap<>();
+		
+		int cnt = boardMapper.getLikeByBoardIdAndMemberId(boardId, memberId);
+		
+		if(cnt == 1) {
+			boardMapper.deleteLike(boardId, memberId);
+			map.put("current", "not liked");			
+		}else {
+			boardMapper.insertLike(boardId, memberId);
+			map.put("current", "liked");
+		}
+		
+		int countAll = boardMapper.countLikeByBoardId(boardId);
+		map.put("count", countAll);
+		
+		return map;
+	}
+	
+	public BoardDto get(int id) {
+		// TODO Auto-generated method stub
+		return get(id, null);
 	}
 
 

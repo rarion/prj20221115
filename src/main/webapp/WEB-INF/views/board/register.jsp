@@ -36,7 +36,7 @@
 					<div class="mb-3">
 						<label for="" class="form-label">작성자</label>
 						<input value="<sec:authentication property="name"/>"
-							required="required" type="text" class="form-control" name="writer">
+							required="required" type="text" class="form-control" name="writer" readonly>
 					</div>
 					
 					<input class="btn btn-primary" type="submit" value="등록">

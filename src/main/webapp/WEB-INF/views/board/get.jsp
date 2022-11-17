@@ -18,25 +18,40 @@
 	<div class="container-md">
 		<div class="row">
 			<div class="col">
-
-				<h1>${board.id}번 게시물
-					
-					<c:url value="/board/modify" var="modifyLink">
-						<c:param name="id" value="${board.id}"></c:param>
-					</c:url>
-					
-					<%-- <sec:authorize access="isAuthenticated()" /> --%>
-					
-					<sec:authentication property="name" var="username" />
-					<!-- 작성자와 authentication.name이 같으면 보여줌 -->
-					<c:if test="${board.writer == username}">
-						<a href="${modifyLink }"> 
-							<i class="fa-solid fa-pen-to-square"></i>
-						</a>
-					</c:if>	
-			
+				<div class="d-flex">
+					<h1 class="me-auto">
+						${board.id}번 게시물
+						
+						<c:url value="/board/modify" var="modifyLink">
+							<c:param name="id" value="${board.id}"></c:param>
+						</c:url>
+						
+						<%-- <sec:authorize access="isAuthenticated()" /> --%>
+						
+						<sec:authentication property="name" var="username" />
+						<!-- 작성자와 authentication.name이 같으면 보여줌 -->
+						<c:if test="${board.writer == username}">
+							<a href="${modifyLink }"> 
+								<i class="fa-solid fa-pen-to-square"></i>
+							</a>
+						</c:if>	
 				
-				</h1>
+					
+					</h1>
+					<h1>
+						<span <sec:authorize access="not isAuthenticated()">style="pointEvent:none;"</sec:authorize> id="likeButton" >
+							<c:if test="${board.liked }">
+								<i class="fa-solid fa-thumbs-up"></i>
+							</c:if>
+							<c:if test="${not board.liked }">
+								<i class="fa-regular fa-thumbs-up"></i>
+							</c:if>
+						</span>
+						<span id="likeCount">
+							${board.countLike}
+						</span>
+					</h1>
+				</div>
 
 				<div class="mb-3">
 					<label class="form-label"> 제목 </label> 
@@ -161,9 +176,33 @@
 <script>
 const ctx = "${pageContext.request.contextPath}";
 
+// 좋아요 버튼 클릭시
+document.querySelector("#likeButton").addEventListener("click", function(){
+	const boardId = document.querySelector("#boardId").value;
+	
+	fetch(`\${ctx}/board/like`, {
+		method : "put",
+		headers : {
+			"Content-Type" : "application/json"
+		},
+		body : JSON.stringify({boardId})
+	})
+	.then(res => res.json())
+	.then(data => {
+		if(data.current == 'liked'){
+			document.querySelector("#likeButton").innerHTML = `<i class="fa-solid fa-thumbs-up"></i>`
+		} else {
+			document.querySelector("#likeButton").innerHTML = `<i class="fa-regular fa-thumbs-up"></i>`
+		}
+		
+		document.querySelector("#likeCount").innerText = data.count;
+	})
+});
+
+
 listReply();
 
-//댓글 crud 메시지 토스트
+// 댓글 crud 메시지 토스트
 const toast = new bootstrap.Toast(document.querySelector("#replyMessageToast"));
 
 document.querySelector("#modifyFormModalSubmitButton").addEventListener("click", function() {
@@ -213,36 +252,54 @@ function listReply(){
 			const modifyReplyButtonId = `modifyReplyButton\${item.id}`;
 			const removeReplyButtonId = `removeReplyButton\${item.id}`;
 			// console.log(item.id);
+			const editButton = 
+				`<div>
+					<button class="btn btn-light" data-bs-toggle="modal" data-bs-target="#modifyReplyFormModal" data-reply-id="\${item.id}" id="\${modifyReplyButtonId}">
+						<i class="fa-solid fa-pen"></i>
+					</button>
+					<button class="btn btn-light" data-bs-toggle="modal" data-bs-target="#removeReplyConfirmModal" data-reply-id="\${item.id}" id="\${removeReplyButtonId}">
+						<i class="fa-solid fa-x"></i>
+					</button>
+				</div>`;
+				
 			const replyDiv = 
 				`<div class="list-group-item d-flex">
 					<div class="me-auto">
-						\${item.content} <small class="text-muted"><small><i class="fa-regular fa-clock"></i>\${item.ago}</small></small>
+						<div>
+							\${item.content}
+						</div>
+							<small class="text-muted">
+								<i class="fa-regular fa-clock"></i> 
+								\${item.ago}
+							</small>
 					</div>
-					
-					<button data-bs-toggle="modal" data-bs-target="#modifyReplyFormModal" data-reply-id="\${item.id}" id="\${modifyReplyButtonId}"><i class="fa-solid fa-pen"></i></button>
-					<button data-bs-toggle="modal" data-bs-target="#removeReplyConfirmModal" data-reply-id="\${item.id}" id="\${removeReplyButtonId}"><i class="fa-solid fa-x"></i></button>			
+					\${item.editable? editButton : ''}
 				</div>`;
 			replyListContainer.insertAdjacentHTML("beforeend", replyDiv);
-			// 수정 폼 모달에 댓글 내용 넣기
-			document.querySelector("#" + modifyReplyButtonId)
-				.addEventListener("click", function() {
-					console.log(this.dataset.replyId+"번 댓글 수정할 예정, 모달띄움");
-					document.querySelector("#modifyFormModalSubmitButton").setAttribute("data-reply-id", this.dataset.replyId);
-					readReplyAndSetModalForm(this.dataset.replyId);
-				});
 			
-			// 삭제확인 버튼에 replyId 옮기기
-			document.querySelector("#" + removeReplyButtonId)
-				.addEventListener("click", function() {
-					// console.log(this.id + "번 삭제버튼 클릭됨")
-					console.log(this.dataset.replyId+"번 댓글 삭제할 예정, 모달띄움");
-					document.querySelector("#removeConfirmModalSubmitButton").setAttribute("data-reply-id", this.dataset.replyId);
-					// removeReply(this.dataset.replyId);
-				});
+			if(item.editable){
+				
+				// 수정 폼 모달에 댓글 내용 넣기
+				document.querySelector("#" + modifyReplyButtonId)
+					.addEventListener("click", function() {
+						console.log(this.dataset.replyId+"번 댓글 수정할 예정, 모달띄움");
+						document.querySelector("#modifyFormModalSubmitButton").setAttribute("data-reply-id", this.dataset.replyId);
+						readReplyAndSetModalForm(this.dataset.replyId);
+					});
+				
+				// 삭제확인 버튼에 replyId 옮기기
+				document.querySelector("#" + removeReplyButtonId)
+					.addEventListener("click", function() {
+						// console.log(this.id + "번 삭제버튼 클릭됨")
+						console.log(this.dataset.replyId+"번 댓글 삭제할 예정, 모달띄움");
+						document.querySelector("#removeConfirmModalSubmitButton").setAttribute("data-reply-id", this.dataset.replyId);
+						// removeReply(this.dataset.replyId);
+					});
+			}
 		}
 	});
-}
 
+}
 function removeReply(replyId) {
 	// /reply/remove/{id}, method:"delete"
 	fetch(ctx + "/reply/remove/" + replyId, {

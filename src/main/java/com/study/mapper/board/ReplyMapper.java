@@ -8,7 +8,7 @@ public interface ReplyMapper {
 
 	int insert(ReplyDTO reply);
 
-	List<ReplyDTO> selectReplyByBoardId(int boardId);
+	List<ReplyDTO> selectReplyByBoardId(int boardId, String username);
 
 	int deleteById(int id);
 	
@@ -17,5 +17,7 @@ public interface ReplyMapper {
 	int update(ReplyDTO reply);
 
 	int deleteByBoardId(int id);
+
+	int deleteByMemberId(String id);
 
 }
